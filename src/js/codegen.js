@@ -174,7 +174,10 @@ export function buildBody(fqn, schema, authid, orderedMethods, purpose) {
     if (m.isPrivate) s += `  -- Private: not declared in SPEC\n`;
 
     if (m.type === 'PROCEDURE') {
-      s += `  PROCEDURE ${m.name}${formatParams(m.params)} IS\n`;
+      s += `  PROCEDURE ${m.name}${formatParams(m.params)} IS 
+    l_PackName          constant varchar2(30) := lower($$plsql_unit);
+    l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));
+    l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName;\n`;
       s += emitLocalCursors(m);
       s += `  BEGIN\n    -- TODO: implement ${m.name}\n    NULL;\n`;
       s += buildExceptionBlock('    ') + '\n';
@@ -183,10 +186,13 @@ export function buildBody(fqn, schema, authid, orderedMethods, purpose) {
 
     if (m.type === 'FUNCTION') {
       const rt = m.returnType || 'BOOLEAN';
-      s += `  FUNCTION ${m.name}${formatParams(m.params)}\n  RETURN ${rt} IS\n    l_result  ${rt};\n`;
+      s += `  FUNCTION ${m.name}${formatParams(m.params)}\n  RETURN ${rt} IS
+    l_PackName          constant varchar2(30) := lower($$plsql_unit);
+    l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));
+    l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName;\n`;
       s += emitLocalCursors(m);
       s += `  BEGIN\n    -- TODO: implement ${m.name}\n    RETURN l_result;\n`;
-      s += buildExceptionBlock('    ') + '\n';
+      s += buildExceptionBlock('    ') + '\n    RETURN NULL;\n';
       s += `  END ${m.name};\n\n`;
     }
   }
