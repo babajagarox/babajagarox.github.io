@@ -76,13 +76,13 @@ function copyCode() {
 
 // ── generate ───────────────────────────────────────────────
 function generate() {
-  const name    = ($('pkgName').value || 'PKG_UNNAMED').toUpperCase();
+  const name    = ($('pkgName').value || 'PKG_UNNAMED');
   const schema  = ($('pkgSchema').value || '').toUpperCase();
   const authid  = $('pkgAuthid').value;
   const purpose = $('pkgPurpose').value || '';
   const genBody = $('chkBody').checked;
   const ordered = $('chkOrd').checked ? getOrderedMethods() : [...methods];
-  const fqn     = schema ? `${schema}.${name}` : name;
+  const fqn     = schema ? `${schema}.xlib${name}` : `xlib${name}`;
 
   $('phMsg').style.display  = 'none';
   $('cSpec').textContent    = buildSpec(fqn, schema, authid, ordered, purpose);
