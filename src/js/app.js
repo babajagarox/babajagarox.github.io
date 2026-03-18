@@ -141,7 +141,7 @@ function applyFocus() {
   focusNext = null;
 }
 
-// ── surgical patch helpers (avoid full re-render on param add/remove) ──
+// ── patch helpers (avoid full re-render on param add/remove) ──
 function patchParams(mId) {
   const m = findMethod(mId);
   if (!m) return;
