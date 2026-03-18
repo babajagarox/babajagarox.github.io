@@ -14,7 +14,7 @@ import { S } from './settings.js';
 
 const BUILTIN_TYPES = [
   'BOOLEAN',
-  'VARCHAR2,
+  'VARCHAR2',
   'NVARCHAR2',
   'CHAR',
   'NUMBER',
