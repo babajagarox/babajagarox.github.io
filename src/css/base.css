@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════════════════════
+   base.css  —  reset, typography, form elements
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font);
+  font-size: 13px;
+}
+
+/* ── form elements ── */
+input[type=text],
+select,
+textarea {
+  font-family: var(--font);
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--bd);
+  border-radius: var(--r6);
+  background: var(--bg);
+  color: var(--tx);
+  width: 100%;
+  min-width: 0;
+  outline: none;
+  transition: border-color .12s;
+}
+
+input[type=text]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px rgba(83,74,183,.12);
+}
+
+textarea {
+  resize: vertical;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+input[type=checkbox] {
+  accent-color: var(--acc);
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+label {
+  font-size: 11px;
+  color: var(--tx2);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ── layout helpers ── */
+.row   { display: flex; gap: 8px; align-items: flex-start; margin-bottom: .6rem; }
+.col   { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.divider { height: 1px; background: var(--bd); margin: .65rem 0; }
+.sec   {
+  font-size: 10px; font-weight: 600; color: var(--tx3);
+  letter-spacing: .07em; text-transform: uppercase; margin-bottom: .55rem;
+}
+.badge {
+  font-size: 9px; padding: 1px 5px; border-radius: 6px;
+  background: #ede9fe; color: #4c1d95; font-weight: 600;
+  margin-left: 4px; vertical-align: middle;
+}
+.purpose-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: .65rem; }
+code.pill {
+  font-size: 10px; background: var(--bg3);
+  padding: 1px 5px; border-radius: 3px; font-family: var(--mono);
+}

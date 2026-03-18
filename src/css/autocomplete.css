@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════
+   autocomplete.css  —  type dropdown
+   ═══════════════════════════════════════════════════════════ */
+
+.acwrap { position: relative; min-width: 0; }
+
+.acdrop {
+  position: absolute;
+  z-index: 500;
+  background: var(--bg);
+  border: 1px solid var(--bd2);
+  border-radius: var(--r6);
+  max-height: 220px;
+  overflow-y: auto;
+  top: calc(100% + 2px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 340px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.16);
+}
+
+.acitem {
+  padding: 5px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  color: var(--tx);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* custom types — amber with star prefix */
+.acitem.ac-custom { color: var(--amber); font-weight: 700; }
+.acitem.ac-custom::before { content: '★'; font-size: 9px; color: var(--amber-star); flex-shrink: 0; }
+
+/* section separators */
+.acitem.ac-sep {
+  padding: 3px 10px;
+  font-size: 9px;
+  color: var(--tx3);
+  background: var(--bg3);
+  cursor: default;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--bd);
+  pointer-events: none;
+  display: block;
+}
+.acitem.ac-sep:first-child { border-top: none; }
+
+/* hover / keyboard highlight */
+.acitem:hover:not(.ac-sep),
+.acitem.hi { background: var(--bg3); }
+
+.acitem.ac-custom.hi,
+.acitem.ac-custom:hover { background: #fffbeb; }
+
+@media (prefers-color-scheme: dark) {
+  .acitem.ac-custom.hi,
+  .acitem.ac-custom:hover { background: #292524; }
+}

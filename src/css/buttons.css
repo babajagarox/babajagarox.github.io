@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════════════
+   buttons.css  —  all button variants
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── base button ── */
+.btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--r6);
+  border: 1px solid var(--bd2);
+  background: var(--bg);
+  color: var(--tx);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .1s;
+  font-family: var(--font);
+}
+.btn:hover   { background: var(--bg3); }
+.btn:active  { transform: scale(.98); }
+
+/* ── accent (filled) ── */
+.btn-acc { background: var(--acc); color: #fff; border-color: var(--acc); }
+.btn-acc:hover { background: var(--acc2); }
+
+/* ── accent outline ── */
+.btn-outline-acc { border-color: var(--acc); color: var(--acc); }
+.btn-outline-acc:hover { background: var(--bg3); }
+
+/* ── danger / delete ── */
+.btn-del {
+  border: none;
+  background: none;
+  color: var(--tx3);
+  padding: 2px 5px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: var(--r4);
+  font-family: var(--font);
+}
+.btn-del:hover { background: var(--danger-bg); color: var(--danger); }
+
+/* ── private toggle ── */
+.btn-priv {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  cursor: pointer; font-weight: 500; border: 1px solid;
+  font-family: var(--font);
+}
+.btn-priv.pub { background: var(--bg2); color: var(--tx2); border-color: var(--bd); }
+.btn-priv.pub:hover { background: var(--bg3); }
+.btn-priv.prv { background: var(--danger-bg); color: var(--danger); border-color: #fca5a5; }
+
+/* ── dashed add-param ── */
+.add-param-btn {
+  font-size: 10px; padding: 2px 8px; border-radius: var(--r4);
+  border: 1px dashed var(--bd2); background: none; color: var(--tx2);
+  cursor: pointer; transition: .12s; font-family: var(--font);
+}
+.add-param-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+/* ── add cursor (pink) ── */
+.add-cur-btn {
+  font-size: 10px; padding: 2px 8px; border-radius: var(--r4);
+  border: 1px dashed #9d174d; background: none; color: #9d174d;
+  cursor: pointer; opacity: .8; font-family: var(--font);
+}
+.add-cur-btn:hover { opacity: 1; background: #fce7f3; }
+
+/* ── full-width dashed add-method ── */
+.add-meth-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center;
+  gap: 5px; font-size: 12px; color: var(--tx2);
+  border: 1px dashed var(--bd2); border-radius: var(--r6);
+  padding: 7px; cursor: pointer; background: none; margin-bottom: .75rem;
+  transition: .12s; font-family: var(--font);
+}
+.add-meth-btn:hover { border-color: var(--acc); color: var(--acc); }
+
+/* ── action bar ── */
+.abar { display: flex; gap: 7px; flex-wrap: wrap; padding-top: .75rem; border-top: 1px solid var(--bd); }

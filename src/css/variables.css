@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════════════════════
+   variables.css  —  design tokens & theme
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* backgrounds */
+  --bg:        #ffffff;
+  --bg2:       #f7f7f8;
+  --bg3:       #f0f0f2;
+
+  /* borders */
+  --bd:        #e0e0e3;
+  --bd2:       #c8c8cc;
+
+  /* text */
+  --tx:        #1a1a1a;
+  --tx2:       #555560;
+  --tx3:       #999999;
+
+  /* accent (purple) */
+  --acc:       #534AB7;
+  --acc2:      #3C3489;
+
+  /* custom type amber */
+  --amber:     #b45309;
+  --amber-bg:  #fef3c7;
+  --amber-bd:  #fcd34d;
+  --amber-star:#f59e0b;
+
+  /* semantic */
+  --danger:    #991b1b;
+  --danger-bg: #fee2e2;
+
+  /* radii */
+  --r4: 4px;
+  --r6: 6px;
+  --r8: 8px;
+
+  /* type */
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #1e1e22;
+    --bg2:      #28282e;
+    --bg3:      #323238;
+    --bd:       #3a3a42;
+    --bd2:      #52525c;
+    --tx:       #e8e8ec;
+    --tx2:      #9999aa;
+    --tx3:      #66666e;
+    --amber:    #fbbf24;
+    --amber-bg: #292524;
+    --amber-bd: #78350f;
+  }
+}

@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════
+   tags.css  —  method tags, chips, vis-hints
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── method type tags ── */
+.tag {
+  display: inline-block; font-size: 10px; padding: 1px 6px;
+  border-radius: 10px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+}
+.t-proc { background: #dbeafe; color: #1e40af; }
+.t-func { background: #dcfce7; color: #166534; }
+.t-rec  { background: #ede9fe; color: #4c1d95; }
+.t-tab  { background: #fef3c7; color: #92400e; }
+.t-cur  { background: #fce7f3; color: #9d174d; }
+.t-priv { background: var(--danger-bg); color: var(--danger); }
+
+/* ── settings custom type chips ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--amber-bg); color: var(--amber);
+  border-radius: 8px; font-size: 11px; padding: 2px 8px;
+  font-weight: 600; border: 1px solid var(--amber-bd);
+}
+.chip button {
+  border: none; background: none; color: var(--amber);
+  cursor: pointer; font-size: 13px; line-height: 1; padding: 0;
+}
+.chip button:hover { color: var(--danger); }
+.chip-list {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;
+  min-height: 32px; padding: 5px;
+  border: 1px solid var(--bd); border-radius: var(--r6); background: var(--bg);
+}
+
+/* ── visibility hints ── */
+.vis-hint {
+  font-size: 10px; color: var(--tx3); margin-top: 6px;
+  padding: 4px 7px; border-radius: var(--r4);
+  background: var(--bg2); border-left: 2px solid var(--bd2);
+}
+.vis-hint.spec-only { border-left-color: #1e40af; }
+.vis-hint.body-only { border-left-color: var(--danger); }
+.vis-hint.both      { border-left-color: #166534; }
