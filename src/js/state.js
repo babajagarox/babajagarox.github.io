@@ -14,7 +14,7 @@ export let methods = [];
 export const ui = { allCollapsed: false };
 
 /** Returns the current default type from settings. */
-export const defType = () => S.defaultType || 'VARCHAR2(255)';
+export const defType = () => S.defaultType || 'VARCHAR2';
 
 // ── id helpers ─────────────────────────────────────────────
 const uid = () => '_' + Math.random().toString(36).slice(2, 8);
