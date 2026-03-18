@@ -6,7 +6,7 @@
  */
 
 export const DEFAULTS = {
-  defaultType:           'VARCHAR2(255)',
+  defaultType:           'VARCHAR2',
   customTypes:           [],
   customTypesTop:        true,
   autoPrefixCursorParams: false,   // prepend cp_ to new cursor params on add
