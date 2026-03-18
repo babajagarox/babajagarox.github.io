@@ -52,7 +52,7 @@ export function applyParsed(parsed) {
 
 /** Read form → S → persist → close settings view. */
 export function saveFromForm() {
-  S.defaultType    = (document.getElementById('s_defaultType').value.trim()) || 'VARCHAR2(255)';
+  S.defaultType    = (document.getElementById('s_defaultType').value.trim()) || 'VARCHAR2';
   S.customTypesTop        = document.getElementById('s_customTypesTop').checked;
   S.autoPrefixCursorParams = document.getElementById('s_autoPrefixCursorParams').checked;
   S.exceptionBody         = document.getElementById('s_exceptionBody').value;
