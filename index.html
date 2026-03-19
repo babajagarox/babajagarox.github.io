@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oracle PL/SQL Package Creator</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN VIEW
+     ═══════════════════════════════════════════════════ -->
+<div class="view active" id="viewMain" style="flex-direction:row;min-height:100vh;width:100%">
+
+  <!-- Left: Form panel -->
+  <div class="form-panel">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:1rem">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect width="22" height="22" rx="5" fill="#534AB7"/>
+        <text x="11" y="15.5" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="monospace">PL</text>
+      </svg>
+      <span style="font-size:15px;font-weight:600;color:var(--tx)">Oracle PL/SQL Package Creator</span>
+      <button class="btn" style="margin-left:auto" onclick="showSettings()">⚙ Settings</button>
+    </div>
+
+    <!-- Package fields -->
+    <div class="sec">Package</div>
+    <div class="row">
+      <div class="col">
+        <label>Package name</label>
+        <input type="text" id="pkgName" placeholder="e.g. PKG_CUSTOMER_MGMT"/>
+      </div>
+      <div class="col" style="max-width:120px">
+        <label>Schema</label>
+        <input type="text" id="pkgSchema" placeholder="e.g. HR"/>
+      </div>
+      <div class="col" style="max-width:140px">
+        <label>Authid</label>
+        <select id="pkgAuthid">
+          <option value="">— none —</option>
+          <option value="DEFINER">DEFINER</option>
+          <option value="CURRENT_USER">CURRENT_USER</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="purpose-row">
+      <label>Purpose / description</label>
+      <input type="text" id="pkgPurpose" placeholder="Brief description of this package"/>
+    </div>
+
+    <div class="row" style="gap:16px;margin-bottom:.4rem">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--tx)">
+        <input type="checkbox" id="chkOrd"/>
+        Oracle standard ordering
+        <span class="badge">Types → Cursors → Procs → Funcs</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--tx)">
+        <input type="checkbox" id="chkBody" checked/>
+        Generate BODY
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Methods toolbar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <div class="sec" style="margin-bottom:0">Methods</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn" onclick="addM('PROCEDURE')">+ Proc</button>
+        <button class="btn" onclick="addM('FUNCTION')">+ Func</button>
+        <button class="btn" onclick="addM('CURSOR')">+ Cursor</button>
+        <button class="btn" onclick="addM('TYPE_RECORD')">+ Record</button>
+        <button class="btn" onclick="addM('TYPE_TABLE')">+ Table</button>
+        <button class="btn btn-out" id="btnColExp" onclick="toggleAllCards()">Collapse all</button>
+      </div>
+    </div>
+
+    <!-- Method cards rendered here -->
+    <div id="mlist"></div>
+
+    <button class="add-meth-btn" onclick="addM('PROCEDURE')">＋ Add method</button>
+
+    <div class="abar">
+      <button class="btn btn-acc" onclick="generate()">⚡ Generate package</button>
+      <button class="btn" onclick="clearAll()">✕ Clear all</button>
+    </div>
+
+  </div><!-- /form-panel -->
+
+  <!-- Right: Output panel -->
+  <div class="out-panel">
+    <div class="out-head">
+      <div class="tabs">
+        <div class="tab on" id="tSpec" onclick="switchTab('spec')">SPEC</div>
+        <div class="tab"    id="tBody" onclick="switchTab('body')">BODY</div>
+      </div>
+      <button class="btn" style="font-size:10px;padding:3px 9px" onclick="copyCode()">Copy</button>
+    </div>
+    <div class="ph-msg" id="phMsg">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <rect width="30" height="30" rx="6" fill="#ede9fe"/>
+        <text x="15" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#534AB7" font-family="monospace">PL</text>
+      </svg>
+      <span>Fill the form and click<br><strong>⚡ Generate package</strong></span>
+    </div>
+    <div class="codebox" id="cSpec" style="display:none"></div>
+    <div class="codebox" id="cBody" style="display:none"></div>
+  </div>
+
+</div><!-- /viewMain -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     SETTINGS VIEW
+     ═══════════════════════════════════════════════════ -->
+<div class="view" id="viewSettings" style="flex-direction:column;min-height:100vh;width:100%">
+
+  <div class="s-head">
+    <button class="btn" onclick="hideSettings()">← Back</button>
+    <span>⚙ Settings</span>
+  </div>
+
+  <div class="s-body">
+
+    <!-- Settings tab strip -->
+    <div class="stabs">
+      <div class="stab on" onclick="switchStab(this,'sp-types')">Data Types</div>
+      <div class="stab"    onclick="switchStab(this,'sp-exc')">Exceptions</div>
+      <div class="stab"    onclick="switchStab(this,'sp-sigs')">Signatures</div>
+    </div>
+
+    <!-- Data Types tab -->
+    <div class="spanel on" id="sp-types">
+
+      <span class="s-label">Default parameter data type</span>
+      <div class="row">
+        <div class="col">
+          <input type="text" id="s_defaultType" placeholder="VARCHAR2(255)"/>
+          <span class="s-note">Pre-filled when adding new params</span>
+        </div>
+      </div>
+
+      <div class="s-div"></div>
+
+      <span class="s-label">Custom types / table references</span>
+      <span class="s-note" style="margin-bottom:6px">
+        Shown with ★ in type autocomplete dropdowns. Amber colour for quick recognition.
+      </span>
+      <div class="chip-list" id="customTypeChips"></div>
+      <div class="row" style="margin-top:7px">
+        <input type="text" id="newChip" placeholder="e.g. HR.EMPLOYEES%ROWTYPE"
+          onkeydown="if(event.key==='Enter')addChip()"/>
+        <button class="btn" onclick="addChip()">+ Add</button>
+      </div>
+
+      <div class="row" style="margin-top:.75rem">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--tx);margin-bottom:0">
+          <input type="checkbox" id="s_customTypesTop"/>
+          Show custom types at <strong>top</strong> of dropdown
+        </label>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--tx);margin-bottom:0">
+          <input type="checkbox" id="s_autoPrefixCursorParams"/>
+          Auto-prefix new cursor params with <code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">cp_</code>
+        </label>
+      </div>
+
+    </div><!-- /sp-types -->
+
+    <!-- Exceptions tab -->
+    <div class="spanel" id="sp-exc">
+      <span class="s-label">WHEN OTHERS handler body</span>
+      <span class="s-note" style="margin-bottom:6px">
+        Injected into every generated <code style="font-family:var(--mono);font-size:10px">WHEN OTHERS THEN</code> block.
+      </span>
+      <textarea id="s_exceptionBody" rows="8" placeholder="RAISE;"></textarea>
+    </div>
+
+    <!-- Signatures tab -->
+    <div class="spanel" id="sp-sigs">
+
+      <span class="s-label">Author</span>
+      <input type="text" id="s_author" placeholder="e.g. John Smith" style="max-width:280px;margin-bottom:.75rem"/>
+
+      <div class="s-div"></div>
+
+      <span class="s-label">Package header comment</span>
+      <div class="tpl-vars">
+        Variables: <code>{{package}}</code> <code>{{schema}}</code>
+        <code>{{date}}</code> <code>{{author}}</code> <code>{{purpose}}</code>
+      </div>
+      <textarea id="s_pkgSig" rows="6" style="margin-top:6px"
+        placeholder="  /**&#10;   * Package : {{package}} | {{date}}&#10;   * Author  : {{author}}&#10;   * Purpose : {{purpose}}&#10;   **/"></textarea>
+
+      <div class="s-div"></div>
+
+      <span class="s-label">Proc / Function header comment</span>
+      <div class="tpl-vars">
+        Variables: <code>{{name}}</code> <code>{{type}}</code>
+        <code>{{date}}</code> <code>{{author}}</code> <code>{{purpose}}</code>
+      </div>
+      <textarea id="s_procSig" rows="5" style="margin-top:6px"
+        placeholder="  -- {{type}}: {{name}} | {{purpose}} | {{author}}"></textarea>
+
+    </div><!-- /sp-sigs -->
+
+  </div><!-- /s-body -->
+
+  <div class="s-foot">
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn" onclick="exportSettings()">⬇ Export .json</button>
+      <label class="btn" style="cursor:pointer">
+        ⬆ Import .json
+        <input type="file" accept=".json" style="display:none" onchange="importSettings(event)"/>
+      </label>
+      <button class="btn" onclick="resetSettings()">Reset defaults</button>
+    </div>
+    <button class="btn btn-acc" onclick="saveSettings()">Save &amp; close</button>
+  </div>
+
+</div><!-- /viewSettings -->
+
+<script src="app.js"></script>
+</body>
+</html>
