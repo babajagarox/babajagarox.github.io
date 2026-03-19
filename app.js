@@ -882,7 +882,7 @@ const SHORTCUTS = {
 document.addEventListener('keydown', e => {
   if (!e.ctrlKey || !e.altKey) return;
   const tag = document.activeElement?.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  //if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
   // Skip if settings view is open
   if ($('viewSettings').classList.contains('active')) return;
   const key = e.key.toLowerCase();
