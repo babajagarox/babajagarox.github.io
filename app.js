@@ -733,7 +733,7 @@ function hideSettings() {
 }
 
 function saveSettings() {
-  S.defaultType            = $('s_defaultType').value.trim() || 'VARCHAR2(255)';
+  S.defaultType            = $('s_defaultType').value.trim() || 'VARCHAR2';
   S.customTypesTop         = $('s_customTypesTop').checked;
   S.autoPrefixCursorParams = $('s_autoPrefixCursorParams').checked;
   S.exceptionBody          = $('s_exceptionBody').value;
