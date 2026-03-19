@@ -318,7 +318,7 @@ function methodCardHTML(m) {
     <select style="font-size:11.5px" onchange="findM('${m.id}').indexedBy=this.value;render()">
       <option ${m.indexedBy==='PLS_INTEGER'?'selected':''}>PLS_INTEGER</option>
       <option ${m.indexedBy==='BINARY_INTEGER'?'selected':''}>BINARY_INTEGER</option>
-      <option ${m.indexedBy==='VARCHAR2(255)'?'selected':''}>VARCHAR2(255)</option>
+      <option ${m.indexedBy==='VARCHAR2'?'selected':''}>VARCHAR2</option>
       <option value="custom" ${m.indexedBy==='custom'?'selected':''}>Custom…</option>
     </select>
     ${m.indexedBy==='custom' ? `<input type="text" value="${esc(m.indexedByCustom)}" style="font-size:11.5px" oninput="findM('${m.id}').indexedByCustom=this.value"/>` : ''}
