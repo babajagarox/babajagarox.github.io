@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════════════
 //  Oracle PL/SQL Package Creator — app.js
-//  Plain JS, no modules, no build step.
 //  One render() call rebuilds the method list.
 // ═══════════════════════════════════════════════════
 
@@ -65,19 +64,46 @@ function fqPkg(raw) {
 }
 
 // ── Built-in Oracle types ─────────────────────────────
-const BUILTIN_TYPES = [
-  'BOOLEAN','VARCHAR2(255)','VARCHAR2(500)','VARCHAR2(2000)','VARCHAR2(4000)','VARCHAR2(32767)',
-  'NVARCHAR2(255)','CHAR(1)','CHAR(10)','NUMBER','NUMBER(5)','NUMBER(10)','NUMBER(15,2)',
-  'NUMBER(20)','NUMBER(38)','INTEGER','PLS_INTEGER','BINARY_INTEGER','SIMPLE_INTEGER',
+// ── Type lists ────────────────────────────────────────
+// RECORD fields and TYPE TABLE definitions can use constrained types.
+// PROCEDURE / FUNCTION / CURSOR params must use unconstrained base types
+// or anchored %TYPE references — Oracle does not allow VARCHAR2(255) etc.
+// in subprogram parameter declarations.
+
+const TYPES_CONSTRAINED = [
+  // Strings — with lengths (valid for record fields / table OF type)
+  'VARCHAR2(255)','VARCHAR2(500)','VARCHAR2(2000)','VARCHAR2(4000)','VARCHAR2(32767)',
+  'NVARCHAR2(255)','NVARCHAR2(2000)','CHAR(1)','CHAR(10)','NCHAR(10)',
+  // Numbers — with precision
+  'NUMBER','NUMBER(5)','NUMBER(10)','NUMBER(15,2)','NUMBER(20)','NUMBER(38)',
+  'INTEGER','PLS_INTEGER','BINARY_INTEGER','SIMPLE_INTEGER',
+  // Date/time
   'DATE','TIMESTAMP','TIMESTAMP(6)','TIMESTAMP WITH TIME ZONE','TIMESTAMP WITH LOCAL TIME ZONE',
   'INTERVAL YEAR TO MONTH','INTERVAL DAY TO SECOND',
-  'CLOB','BLOB','NCLOB','XMLTYPE','RAW(255)','SYS_REFCURSOR','SIMPLE_FLOAT','SIMPLE_DOUBLE',
+  // Other
+  'BOOLEAN','CLOB','BLOB','NCLOB','XMLTYPE','RAW(255)','SYS_REFCURSOR',
+  'SIMPLE_FLOAT','SIMPLE_DOUBLE',
 ];
 
-function typeList() {
+const TYPES_UNCONSTRAINED = [
+  // Base types — no length/precision (required for subprogram params)
+  'VARCHAR2','NVARCHAR2','CHAR','NCHAR',
+  'NUMBER','INTEGER','PLS_INTEGER','BINARY_INTEGER','SIMPLE_INTEGER',
+  'DATE','TIMESTAMP','TIMESTAMP WITH TIME ZONE','TIMESTAMP WITH LOCAL TIME ZONE',
+  'INTERVAL YEAR TO MONTH','INTERVAL DAY TO SECOND',
+  'BOOLEAN','CLOB','BLOB','NCLOB','XMLTYPE','RAW','SYS_REFCURSOR',
+  'SIMPLE_FLOAT','SIMPLE_DOUBLE',
+  // Anchored types — common patterns (user can type any table.column%TYPE)
+  'table.column%TYPE','table%ROWTYPE',
+];
+
+// forParam: true  → unconstrained list (proc/func/cursor params, return types)
+//           false → constrained list   (record fields, table OF type)
+function typeList(forParam) {
+  const base = forParam ? TYPES_UNCONSTRAINED : TYPES_CONSTRAINED;
   const c = S.customTypes || [];
-  if (!c.length) return BUILTIN_TYPES;
-  return S.customTypesTop ? [...c, ...BUILTIN_TYPES] : [...BUILTIN_TYPES, ...c];
+  if (!c.length) return base;
+  return S.customTypesTop ? [...c, ...base] : [...base, ...c];
 }
 
 // ── Method factories ──────────────────────────────────
@@ -136,11 +162,11 @@ function visHint(m) {
 // ── Autocomplete ──────────────────────────────────────
 let acFi = 0;
 
-function showAC(inputId, all) {
+function showAC(inputId, all, forParam) {
   closeAC();
   const el = $(inputId); if (!el) return;
   const q = el.value.trim().toLowerCase();
-  const full = typeList();
+  const full = typeList(!!forParam);
   const customSet = new Set(S.customTypes || []);
   const hits = all ? full : full.filter(t => q === '' || t.toLowerCase().includes(q));
   if (!hits.length) return;
@@ -195,42 +221,59 @@ function acKey(e, inputId) {
 document.addEventListener('click', e => { if (!e.target.closest('.acwrap')) closeAC(); });
 
 // Returns HTML string for a type input cell with autocomplete wired up
-function typeCell(val, id, onInputExpr) {
+// forParam: true  = proc/func/cursor params (unconstrained types + %TYPE)
+//           false = record fields / table OF type (constrained types)
+function typeCell(val, id, onInputExpr, forParam) {
   const v = esc(val);
+  const fp = forParam ? 'true' : 'false';
   return `<div class="acwrap">` +
-    `<input type="text" id="${id}" value="${v}" placeholder="type"` +
-    ` oninput="${onInputExpr};showAC('${id}',false)"` +
-    ` onfocus="showAC('${id}',true)"` +
+    `<input type="text" id="${id}" value="${v}" placeholder="${forParam ? 'VARCHAR2 or table.col%TYPE' : 'type'}"` +
+    ` oninput="${onInputExpr};showAC('${id}',false,${fp})"` +
+    ` onfocus="showAC('${id}',true,${fp})"` +
     ` onkeydown="acKey(event,'${id}')"/>` +
     `</div>`;
 }
 
 // ── Param row HTML ────────────────────────────────────
-// kind: 'p' = regular param (5-col with default), 'c' = cursor param (4-col, no default)
+// kind: 'p'  = proc/func param  (5-col, with default, unconstrained types)
+//       'r'  = record field     (4-col, no default,   constrained types)
+//       'c'  = cursor param     (4-col, no default,   unconstrained types)
+//       'lc' = local cursor param (4-col, no default, unconstrained types)
 function paramRowHTML(p, mid, kind, lcid) {
   const is5 = kind === 'p';
-  const setType = kind === 'p'  ? `findP('${mid}','${p.id}').type=this.value` :
-                  kind === 'c'  ? `findCP('${mid}','${p.id}').type=this.value` :
-                                  `findLCP('${mid}','${lcid}','${p.id}').type=this.value`;
-  const updName = kind === 'p'  ? `findP('${mid}','${p.id}').name=this.value` :
-                  kind === 'c'  ? `findCP('${mid}','${p.id}').name=this.value` :
-                                  `findLCP('${mid}','${lcid}','${p.id}').name=this.value`;
-  const updMode = kind === 'p'  ? `findP('${mid}','${p.id}').mode=this.value` :
-                  kind === 'c'  ? `findCP('${mid}','${p.id}').mode=this.value` :
-                                  `findLCP('${mid}','${lcid}','${p.id}').mode=this.value`;
-  const removeCall = kind === 'p'  ? `removeP('${mid}','${p.id}')` :
-                     kind === 'c'  ? `removeCP('${mid}','${p.id}')` :
-                                     `removeLCP('${mid}','${lcid}','${p.id}')`;
-  const typeId = `t_${p.id}`;
+
+  const setType = kind === 'p'  ? `findP('${mid}','${p.id}').type=this.value`
+                : kind === 'r'  ? `findP('${mid}','${p.id}').type=this.value`
+                : kind === 'c'  ? `findCP('${mid}','${p.id}').type=this.value`
+                :                 `findLCP('${mid}','${lcid}','${p.id}').type=this.value`;
+
+  const updName = kind === 'p'  ? `findP('${mid}','${p.id}').name=this.value`
+                : kind === 'r'  ? `findP('${mid}','${p.id}').name=this.value`
+                : kind === 'c'  ? `findCP('${mid}','${p.id}').name=this.value`
+                :                 `findLCP('${mid}','${lcid}','${p.id}').name=this.value`;
+
+  const updMode = kind === 'p'  ? `findP('${mid}','${p.id}').mode=this.value`
+                : kind === 'r'  ? `findP('${mid}','${p.id}').mode=this.value`
+                : kind === 'c'  ? `findCP('${mid}','${p.id}').mode=this.value`
+                :                 `findLCP('${mid}','${lcid}','${p.id}').mode=this.value`;
+
+  const removeCall = kind === 'p' || kind === 'r' ? `removeP('${mid}','${p.id}')`
+                   : kind === 'c'                  ? `removeCP('${mid}','${p.id}')`
+                   :                                 `removeLCP('${mid}','${lcid}','${p.id}')`;
+
+  const typeId  = `t_${p.id}`;
+  // Only record fields use constrained types; everything else uses unconstrained
+  const forParam = kind !== 'r';
+  const placeholder = kind === 'r' ? 'field_name' : kind === 'c' || kind === 'lc' ? 'cp_param' : 'param_name';
 
   return `<div class="${is5 ? 'pgrid' : 'pgrid-4'}">` +
-    `<input type="text" id="pn_${p.id}" value="${esc(p.name)}" placeholder="${kind==='c'||kind==='lc'?'cp_param':'param_name'}" oninput="${updName}"/>` +
+    `<input type="text" id="pn_${p.id}" value="${esc(p.name)}" placeholder="${placeholder}" oninput="${updName}"/>` +
     `<select onchange="${updMode}">` +
     `<option ${p.mode==='IN'?'selected':''}>IN</option>` +
     `<option ${p.mode==='OUT'?'selected':''}>OUT</option>` +
     `<option ${p.mode==='IN OUT'?'selected':''}>IN OUT</option>` +
     `</select>` +
-    typeCell(p.type, typeId, setType) +
+    typeCell(p.type, typeId, setType, forParam) +
     (is5 ? `<input type="text" value="${esc(p.def||'')}" placeholder="default (opt)" oninput="findP('${mid}','${p.id}').def=this.value"/>` : '') +
     `<button class="btn-del" onclick="${removeCall}">✕</button>` +
     `</div>`;
@@ -319,7 +362,7 @@ function methodCardHTML(m) {
   let paramsHTML = '';
   if (isP || isF || isR) {
     const label = isR ? 'Fields' : 'Parameters';
-    const rows  = m.params.map(p => paramRowHTML(p, m.id, isR ? 'c' : 'p')).join('');
+    const rows  = m.params.map(p => paramRowHTML(p, m.id, isR ? 'r' : 'p')).join('');
     const hdr   = isR
       ? '<div class="phdr-4"><span>Name</span><span>Mode</span><span>Type</span><span></span></div>'
       : '<div class="phdr"><span>Name</span><span>Mode</span><span>Type</span><span>Default</span><span></span></div>';
@@ -335,7 +378,7 @@ function methodCardHTML(m) {
   // ── return type (function only) ──
   const retHTML = isF ? `<div class="ret-row">
     <label>Return type</label>
-    ${typeCell(m.returnType, 'ret_'+m.id, `findM('${m.id}').returnType=this.value`)}
+    ${typeCell(m.returnType, 'ret_'+m.id, `findM('${m.id}').returnType=this.value`, true)}
   </div>` : '';
 
   // ── type table fields ──
