@@ -1,7 +1,5 @@
 // ═══════════════════════════════════════════════════
 //  Oracle PL/SQL Package Creator — app.js
-//  Plain JS, no modules, no build step.
-//  One render() call rebuilds the method list.
 // ═══════════════════════════════════════════════════
 
 // ── State ────────────────────────────────────────────
@@ -11,7 +9,7 @@ let focusId  = null;   // id of input to focus after next render
 
 // ── Settings (single object, persisted to localStorage) ──
 const DEFAULTS = {
-  defaultType:           'VARCHAR2(255)',
+  defaultType:           'VARCHAR2',
   customTypes:           [],
   customTypesTop:        true,
   autoPrefixCursorParams: false,
@@ -42,12 +40,12 @@ const cbn  = n  => (n || 'cursor').replace(/^c_/, '');          // cursor base n
 
 // ── Built-in Oracle types ─────────────────────────────
 const BUILTIN_TYPES = [
-  'BOOLEAN','VARCHAR2(255)','VARCHAR2(500)','VARCHAR2(2000)','VARCHAR2(4000)','VARCHAR2(32767)',
-  'NVARCHAR2(255)','CHAR(1)','CHAR(10)','NUMBER','NUMBER(5)','NUMBER(10)','NUMBER(15,2)',
-  'NUMBER(20)','NUMBER(38)','INTEGER','PLS_INTEGER','BINARY_INTEGER','SIMPLE_INTEGER',
-  'DATE','TIMESTAMP','TIMESTAMP(6)','TIMESTAMP WITH TIME ZONE','TIMESTAMP WITH LOCAL TIME ZONE',
+  'BOOLEAN','VARCHAR2',
+  'NVARCHAR2','CHAR','NUMBER',
+  'INTEGER','PLS_INTEGER','BINARY_INTEGER','SIMPLE_INTEGER',
+  'DATE','TIMESTAMP','TIMESTAMP WITH TIME ZONE','TIMESTAMP WITH LOCAL TIME ZONE',
   'INTERVAL YEAR TO MONTH','INTERVAL DAY TO SECOND',
-  'CLOB','BLOB','NCLOB','XMLTYPE','RAW(255)','SYS_REFCURSOR','SIMPLE_FLOAT','SIMPLE_DOUBLE',
+  'CLOB','BLOB','NCLOB','XMLTYPE','RAW','SYS_REFCURSOR','SIMPLE_FLOAT','SIMPLE_DOUBLE',
 ];
 
 function typeList() {
@@ -68,10 +66,10 @@ function newMethod(type) {
   };
 }
 function newParam(prefix) {
-  return { id: uid(), name: prefix || '', mode: 'IN', type: S.defaultType || 'VARCHAR2(255)', def: '' };
+  return { id: uid(), name: prefix || '', mode: 'IN', type: S.defaultType || 'VARCHAR2', def: '' };
 }
 function newCursorParam(autoPrefix) {
-  return { id: uid(), name: autoPrefix ? 'cp_' : '', mode: 'IN', type: S.defaultType || 'VARCHAR2(255)' };
+  return { id: uid(), name: autoPrefix ? 'cp_' : '', mode: 'IN', type: S.defaultType || 'VARCHAR2' };
 }
 function newLocalCursor() {
   return { id: uid(), name: '', cursorParams: [], selectSql: '', declareRowVar: false, open: true };
@@ -608,7 +606,7 @@ function fmtParams(params, isCursor) {
   const lines = params.map(p => {
     let l = `    ${pad(p.name||'p', maxN+1)} `;
     if (!isCursor) l += `${pad(p.mode||'IN', maxM+1)} `;
-    l += p.type || 'VARCHAR2(255)';
+    l += p.type || 'VARCHAR2';
     if (!isCursor && p.def?.trim()) l += ` DEFAULT ${p.def.trim()}`;
     return l;
   });
@@ -671,8 +669,8 @@ function buildSpec(fqn, schema, authid, list, purpose) {
     if (m.type === 'TYPE_RECORD') s += emitRecord(m);
     else if (m.type === 'TYPE_TABLE') s += emitTable(m);
     else if (m.type === 'CURSOR') s += emitCursor(m);
-    else if (m.type === 'PROCEDURE') s += `  PROCEDURE ${m.name}${fmtParams(m.params)};\n\n`;
-    else if (m.type === 'FUNCTION')  s += `  FUNCTION ${m.name}${fmtParams(m.params)}\n  RETURN ${m.returnType||'BOOLEAN'};\n\n`;
+    else if (m.type === 'PROCEDURE') s += `  PROCEDURE ${m.name}_PC${fmtParams(m.params)};\n\n`;
+    else if (m.type === 'FUNCTION')  s += `  FUNCTION ${m.name}_FN${fmtParams(m.params)}\n  RETURN ${m.returnType||'BOOLEAN'};\n\n`;
   }
   return s + `END ${fqn};\n/`;
 }
@@ -698,14 +696,14 @@ function buildBody(fqn, schema, authid, list, purpose) {
     const lcVars = lcs.filter(c => c.declareRowVar);
 
     if (m.type === 'PROCEDURE') {
-      s += `  PROCEDURE ${m.name}${fmtParams(m.params)} IS\n`;
+      s += `  PROCEDURE ${m.name}_PC${fmtParams(m.params)} IS\n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
       s += `  BEGIN\n    -- TODO: implement ${m.name}\n    NULL;\n${excBlock('    ')}\n  END ${m.name};\n\n`;
     }
     if (m.type === 'FUNCTION') {
       const rt = m.returnType || 'BOOLEAN';
-      s += `  FUNCTION ${m.name}${fmtParams(m.params)}\n  RETURN ${rt} IS\n    l_result  ${rt};\n`;
+      s += `  FUNCTION ${m.name}_FN${fmtParams(m.params)}\n  RETURN ${rt} IS\n    l_result  ${rt};\n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
       s += `  BEGIN\n    -- TODO: implement ${m.name}\n    RETURN l_result;\n${excBlock('    ')}\n  END ${m.name};\n\n`;
