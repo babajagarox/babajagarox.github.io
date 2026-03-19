@@ -24,7 +24,7 @@ function formatParams(params, isCursor = false) {
   const lines = params.map(p => {
     let l = `    ${pad(p.name || 'p', maxN + 1)} `;
     if (!isCursor) l += `${pad(p.mode || 'IN', maxM + 1)} `;
-    l += p.type || 'VARCHAR2(255)';
+    l += p.type || 'VARCHAR2';
     if (!isCursor && p.def?.trim()) l += ` DEFAULT ${p.def.trim()}`;
     return l;
   });
@@ -132,8 +132,8 @@ export function buildSpec(fqn, schema, authid, orderedMethods, purpose) {
     if      (m.type === 'TYPE_RECORD') s += emitTypeRecord(m);
     else if (m.type === 'TYPE_TABLE')  s += emitTypeTable(m);
     else if (m.type === 'CURSOR')      s += emitCursor(m);
-    else if (m.type === 'PROCEDURE')   s += `  PROCEDURE ${m.name}${formatParams(m.params)};\n\n`;
-    else if (m.type === 'FUNCTION')    s += `  FUNCTION ${m.name}${formatParams(m.params)}\n  RETURN ${m.returnType || 'BOOLEAN'};\n\n`;
+    else if (m.type === 'PROCEDURE')   s += `  PROCEDURE ${m.name}_PC${formatParams(m.params)};\n\n`;
+    else if (m.type === 'FUNCTION')    s += `  FUNCTION ${m.name}_FN${formatParams(m.params)}\n  RETURN ${m.returnType || 'BOOLEAN'};\n\n`;
   }
 
   return s + `END ${fqn};\n/`;
