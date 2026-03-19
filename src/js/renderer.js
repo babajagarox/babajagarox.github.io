@@ -298,7 +298,11 @@ export function buildMethodCardHTML(m, copyableMethods, allMethods) {
         <label>Purpose</label>
         <input type="text" value="${esc(m.purpose || '')}"
           placeholder="What this ${m.type.toLowerCase()} does"
-          oninput="window.PLSQL.updM('${m.id}','purpose',this.value)"/>
+          oninput="window.PLSQL.updM('${m.id}','purpose',this.value);
+                   const _p=document.getElementById('mname_${m.id}');
+                   if(_p){let ps=_p.querySelector('.mname-purpose');
+                     if(this.value){if(!ps){ps=document.createElement('span');ps.className='mname-purpose';_p.appendChild(ps);}ps.textContent='— '+this.value;}
+                     else if(ps){ps.remove();}}"/>
       </div>`
     : '';
 
@@ -317,7 +321,7 @@ export function buildMethodCardHTML(m, copyableMethods, allMethods) {
     <span class="dhandle">⠿</span>
     ${typeTag(m.type)}
     ${m.isPrivate ? '<span class="tag t-priv" style="font-size:9px">PRIVATE</span>' : ''}
-    <span class="mname">
+    <span id="mname_${m.id}" class="mname">
       ${esc(m.name) || '(unnamed)'}
       ${m.purpose ? `<span class="mname-purpose">— ${esc(m.purpose)}</span>` : ''}
     </span>
@@ -333,7 +337,9 @@ export function buildMethodCardHTML(m, copyableMethods, allMethods) {
       <label>${isCur ? 'Cursor name (c_ prefix auto-added)' : 'Name'}</label>
       <input type="text" id="mn_${m.id}" value="${esc(m.name)}"
         placeholder="${isR?'T_CUSTOMER_REC':isT?'T_CUSTOMER_TAB':isCur?'get_customers':isF?'get_customer':'process_order'}"
-        oninput="window.PLSQL.updM('${m.id}','name',this.value)"/>
+        oninput="window.PLSQL.updM('${m.id}','name',this.value);
+                 const _h=document.getElementById('mname_${m.id}');
+                 if(_h)_h.firstChild.textContent=this.value||'(unnamed)'"/>
     </div></div>
     ${purposeRow}
     ${paramsSection}
