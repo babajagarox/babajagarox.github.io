@@ -689,14 +689,14 @@ function emitRecord(m, i='  ') {
   let s = `${i}TYPE ${name} IS RECORD (\n`;
   s += m.params.length
     ? m.params.map(p => `${i}  ${pad(p.name, 24)} ${p.type||'VARCHAR2(255)'}`).join(',\n') + '\n'
-    : `${i}  -- add record fields\n`;
+    : `        ${i}  -- add record fields\n`;
   return s + `${i});\n\n`;
 }
 
 function emitTable(m, i='  ') {
   const name = fqName(m);
   const idx  = m.indexedBy === 'custom' ? (m.indexedByCustom||'PLS_INTEGER') : m.indexedBy;
-  return `${i}TYPE ${name} IS TABLE OF ${m.recordRef||'VARCHAR2(4000)'}\n${i}  INDEX BY ${idx};\n\n`;
+  return `    ${i}TYPE ${name} IS TABLE OF ${m.recordRef||'VARCHAR2(4000)'}\n${i}  INDEX BY ${idx};\n\n`;
 }
 
 function emitCursor(c, i='  ') {
@@ -731,7 +731,7 @@ function procComment(m) {
 
 function excBlock(ind) {
   const body = (S.exceptionBody || 'RAISE;').trim();
-  return `${ind.slice(0,-2)}EXCEPTION\n${ind}WHEN OTHERS THEN\n` + body.split('\n').map(l=>`${ind}${l}`).join('\n');
+  return `${ind.slice(0,-2)}    EXCEPTION\n${ind}    WHEN OTHERS THEN\n` + body.split('\n').map(l=>`        ${ind}${l}`).join('\n');
 }
 
 function buildSpec(fqn, schema, authid, list, purpose) {
@@ -744,8 +744,8 @@ function buildSpec(fqn, schema, authid, list, purpose) {
     if      (m.type === 'TYPE_RECORD') s += emitRecord(m);
     else if (m.type === 'TYPE_TABLE')  s += emitTable(m);
     else if (m.type === 'CURSOR')      s += emitCursor(m);
-    else if (m.type === 'PROCEDURE')   s += `  PROCEDURE ${n}${fmtParams(m.params)};\n\n`;
-    else if (m.type === 'FUNCTION')    s += `  FUNCTION ${n}${fmtParams(m.params)}\n  RETURN ${m.returnType||'BOOLEAN'};\n\n`;
+    else if (m.type === 'PROCEDURE')   s += `    PROCEDURE ${n}${fmtParams(m.params)};\n\n`;
+    else if (m.type === 'FUNCTION')    s += `    FUNCTION ${n}${fmtParams(m.params)}\n    RETURN ${m.returnType||'BOOLEAN'};\n\n`;
   }
   return s + `END ${fqn};\n/`;
 }
@@ -772,24 +772,24 @@ function buildBody(fqn, schema, authid, list, purpose) {
 
     if (m.type === 'PROCEDURE') {
       const n = fqName(m);
-      s += `  PROCEDURE ${n}${fmtParams(m.params)} IS 
+      s += `    PROCEDURE ${n}${fmtParams(m.params)} IS 
         l_PackName          constant varchar2(30) := lower($$plsql_unit);
         l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));
         l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName; \n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
-      s += `  BEGIN\n    -- TODO: implement ${n}\n    NULL;\n${excBlock('    ')}\n  END ${n};\n\n`;
+      s += `    BEGIN\n        -- TODO: implement ${n}\n        NULL;\n${excBlock('    ')}\n    END ${n};\n\n`;
     }
     if (m.type === 'FUNCTION') {
       const n  = fqName(m);
       const rt = m.returnType || 'BOOLEAN';
-      s += `  FUNCTION ${n}${fmtParams(m.params)}\n  RETURN ${rt} IS
+      s += `    FUNCTION ${n}${fmtParams(m.params)}\n    RETURN ${rt} IS
         l_PackName          constant varchar2(30) := lower($$plsql_unit);
         l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));
         l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName;  \n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
-      s += `  BEGIN\n    -- TODO: implement ${n}\n    RETURN l_result;\n${excBlock('    ')}\n    RETURN null; \n  END ${n};\n\n`;
+      s += `    BEGIN\n        -- TODO: implement ${n}\n    RETURN l_result;\n${excBlock('    ')}\n        RETURN null; \n    END ${n};\n\n`;
     }
   }
   return s + `END ${fqn};\n/`;
