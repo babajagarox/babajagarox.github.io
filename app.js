@@ -772,7 +772,10 @@ function buildBody(fqn, schema, authid, list, purpose) {
 
     if (m.type === 'PROCEDURE') {
       const n = fqName(m);
-      s += `  PROCEDURE ${n}${fmtParams(m.params)} IS\n`;
+      s += `  PROCEDURE ${n}${fmtParams(m.params)} IS 
+        l_PackName          constant varchar2(30) := lower($$plsql_unit);\n
+        l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));\n
+        l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName; \n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
       s += `  BEGIN\n    -- TODO: implement ${n}\n    NULL;\n${excBlock('    ')}\n  END ${n};\n\n`;
@@ -780,7 +783,10 @@ function buildBody(fqn, schema, authid, list, purpose) {
     if (m.type === 'FUNCTION') {
       const n  = fqName(m);
       const rt = m.returnType || 'BOOLEAN';
-      s += `  FUNCTION ${n}${fmtParams(m.params)}\n  RETURN ${rt} IS\n    l_result  ${rt};\n`;
+      s += `  FUNCTION ${n}${fmtParams(m.params)}\n  RETURN ${rt} IS\n
+        l_PackName          constant varchar2(30) := lower($$plsql_unit);\n
+        l_ProcName          constant varchar2(30) := lower(utl_call_stack.subprogram(1)(2));\n
+        l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName;  \n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
       s += `  BEGIN\n    -- TODO: implement ${n}\n    RETURN l_result;\n${excBlock('    ')}\n  END ${n};\n\n`;
