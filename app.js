@@ -789,7 +789,7 @@ function buildBody(fqn, schema, authid, list, purpose) {
         l_Procedure         constant varchar2(60) := l_PackName||'.'||l_ProcName;  \n`;
       lcs.forEach(c => s += emitCursor(c, '    '));
       lcVars.forEach(c => s += `    r_${cbn(c.name)}  ${cfn(c.name)}%ROWTYPE;\n`);
-      s += `  BEGIN\n    -- TODO: implement ${n}\n    RETURN l_result;\n${excBlock('    ')}\n RETURN null; \n  END ${n};\n\n`;
+      s += `  BEGIN\n    -- TODO: implement ${n}\n    RETURN l_result;\n${excBlock('    ')}\n    RETURN null; \n  END ${n};\n\n`;
     }
   }
   return s + `END ${fqn};\n/`;
